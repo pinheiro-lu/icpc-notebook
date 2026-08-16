@@ -1,18 +1,22 @@
-// Lazy Segment Tree (KACTL)
-// Description: Segment tree with ability to add or set values of large intervals,
-// and compute max of intervals. Dynamically creates nodes (implicit sparse).
-// Time: O(log N)
-// Usage: Node* tr = new Node(v, 0, v.size()); // from vi
-//        Node* tr = new Node(0, N);           // empty interval [0, N)
-// Source: https://github.com/kth-competitive-programming/kactl/blob/main/content/data-structures/LazySegmentTree.h
+/**
+ * Author: Simon Lindholm
+ * Date: 2016-10-08
+ * License: CC0
+ * Source: https://github.com/kth-competitive-programming/kactl/blob/main/content/data-structures/LazySegmentTree.h
+ * Description: Segment tree with ability to add or set values of large intervals, and compute max of intervals.
+ * Can be changed to other things.
+ * Use with a bump allocator for better performance, and SmallPtr or implicit indices to save memory.
+ * Time: O(\log N).
+ * Usage: Node* tr = new Node(v, 0, v.size());
+ * Status: stress-tested a bit
+ */
 
 const int inf = 1e9;
 
 struct Node {
 	Node *l = 0, *r = 0;
 	int lo, hi, mset = inf, madd = 0, val = -inf;
-
-	Node(int lo, int hi) : lo(lo), hi(hi) {}
+	Node(int lo, int hi) : lo(lo), hi(hi) {} // Large interval of -inf
 	Node(vi& v, int lo, int hi) : lo(lo), hi(hi) {
 		if (lo + 1 < hi) {
 			int mid = lo + (hi - lo) / 2;
@@ -20,14 +24,12 @@ struct Node {
 			val = max(l->val, r->val);
 		} else val = v[lo];
 	}
-
 	int query(int L, int R) {
 		if (R <= lo || hi <= L) return -inf;
 		if (L <= lo && hi <= R) return val;
 		push();
 		return max(l->query(L, R), r->query(L, R));
 	}
-
 	void set(int L, int R, int x) {
 		if (R <= lo || hi <= L) return;
 		if (L <= lo && hi <= R) mset = val = x, madd = 0;
@@ -36,7 +38,6 @@ struct Node {
 			val = max(l->val, r->val);
 		}
 	}
-
 	void add(int L, int R, int x) {
 		if (R <= lo || hi <= L) return;
 		if (L <= lo && hi <= R) {
@@ -48,7 +49,6 @@ struct Node {
 			val = max(l->val, r->val);
 		}
 	}
-
 	void push() {
 		if (!l) {
 			int mid = lo + (hi - lo) / 2;
