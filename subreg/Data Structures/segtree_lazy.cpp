@@ -8,6 +8,7 @@
  * Use with a bump allocator for better performance, and SmallPtr or implicit indices to save memory.
  * Time: O(\log N).
  * Usage: Node* tr = new Node(v, 0, v.size());
+ * Intervals are half-open: [L, R)
  * Status: stress-tested a bit
  */
 
