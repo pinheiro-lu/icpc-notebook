@@ -1,58 +1,66 @@
-// Heavy Light Decomposition
-// if EDGE is true, the child of the edge represents it
+/**
+ * Author: Benjamin Qi, Oleksandr Kulkov, chilli
+ * Date: 2020-01-12
+ * License: CC0
+ * Source: https://github.com/kth-competitive-programming/kactl/blob/main/content/graph/HLD.h
+ * Description: Decomposes a tree into vertex disjoint heavy paths and light
+ * edges such that the path from any leaf to the root contains at most log(n)
+ * light edges. Code does additive modifications and max queries, but can
+ * support commutative segtree modifications/queries on paths and subtrees.
+ * Takes as input the full adjacency list. VALS_EDGES being true means that
+ * values are stored in the edges, as opposed to the nodes. All values
+ * initialized to the segtree default. Root must be 0.
+ * Time: O((log N)^2)
+ * Status: stress-tested against old HLD
+ */
 
-template<typename SEG, bool EDGE> struct HLD {
-	vector<int> dad, pos, in, out, h;
-	// dad[u]: self-explaining
-	// pos[k]: k-th vertex to be visited in dfs order
-	// in[u], out[u]: time of visit in dfs of vertex u
-	// h[u]: highest ancestor from same hld chain ("head")
-	// 	 two vertices u and v are from the same chain iff h[u] == h[v]
-	SEG seg;
+template <bool VALS_EDGES = false> struct HLD {
+	int N, tim = 0;
+	vector<vi> adj;
+	vi par, siz, rt, pos;
+	Node *tree;
 
-	HLD(int n, vector<int> g[]): dad(n), pos(n), in(n), out(n), h(n), seg(n) {
-		int t = -1;
-		function<void(int)> dfs = [&](int u) {
-			pos[ in[u] = ++t ] = u;
-			int mx = -1;
-			for(int &v: g[u]) if(v != dad[u]) {
-				dad[v] = u;
-				h[v] = g[u][0] == v ? h[u] : v;
-				dfs(v);
-				if(out[v] - in[v] > mx) 
-					mx = out[v] - in[v], swap(g[u][0], v);
-			}
-			out[u] = t;
-		};
-		dfs(0); t = -1; dfs(0); // yes, twice 
+	HLD(vector<vi> adj_)
+		: N(adj_.size()), adj(adj_), par(N, -1), siz(N, 1),
+		  rt(N), pos(N), tree(new Node(0, N)) {
+		dfsSz(0); dfsHld(0);
 	}
-
-	// if EDGE == true, the child of an edge represents it
-	template<typename T>
-	void update(int u, T val) {
-		seg.update(in[u], val);
-	}
-
-	// If range update is needed, just replace seg.query with seg.update
-	template<typename RES> 
-	RES query_path(int u, int v) {
-		RES res = RES();
-		while(h[u] != h[v]) {
-			if(in[h[u]] < in[h[v]]) swap(u, v);
-			res = res + seg.query(in[h[u]], in[u]);
-			u = dad[h[u]];
+	void dfsSz(int v) {
+		if (par[v] != -1) adj[v].erase(find(adj[v].begin(), adj[v].end(), par[v]));
+		for (int& u : adj[v]) {
+			par[u] = v;
+			dfsSz(u);
+			siz[v] += siz[u];
+			if (siz[u] > siz[adj[v][0]]) swap(u, adj[v][0]);
 		}
-		if(in[u] > in[v]) swap(u, v);
-		// u is now the LCA of u and v
-		if(in[u] + EDGE <= in[v]) 
-			res = res + seg.query(in[u] + EDGE, in[v]);
+	}
+	void dfsHld(int v) {
+		pos[v] = tim++;
+		for (int u : adj[v]) {
+			rt[u] = (u == adj[v][0] ? rt[v] : u);
+			dfsHld(u);
+		}
+	}
+	template <class B> void process(int u, int v, B op) {
+		for (; rt[u] != rt[v]; v = par[rt[v]]) {
+			if (pos[rt[u]] > pos[rt[v]]) swap(u, v);
+			op(pos[rt[v]], pos[v] + 1);
+		}
+		if (pos[u] > pos[v]) swap(u, v);
+		op(pos[u] + VALS_EDGES, pos[v] + 1);
+	}
+	void modifyPath(int u, int v, int val) {
+		process(u, v, [&](int l, int r) { tree->add(l, r, val); });
+	}
+	int queryPath(int u, int v) {
+		int res = -inf;
+		process(u, v, [&](int l, int r) {
+			res = max(res, tree->query(l, r));
+		});
 		return res;
 	}
-
-	template<typename RES> 
-	RES query_subtree(int u) {
-		if(in[u] + EDGE <= out[u])
-			return seg.query(in[u] + EDGE, out[u]);
-		return RES();
+	int querySubtree(int v) {
+		return tree->query(pos[v] + VALS_EDGES, pos[v] + siz[v]);
 	}
 };
+
