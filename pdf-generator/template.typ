@@ -44,7 +44,7 @@
   set page( header: [
     #str(title)
     #h(1fr)
-    #counter(page).display()
+    #context counter(page).display()
   ])
   show: columns.with(3, gutter: 0.7em, )
   // Table of contents.

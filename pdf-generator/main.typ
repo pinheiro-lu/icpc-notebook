@@ -3,14 +3,14 @@
 
 // Change here
 #show: project.with(
-  title: "Universidade de São Paulo - Faça o WM",
+  title: "Universidade de São Paulo - Escola de Artes, Ciências e Humanidades - Olá,sou Marcus Peixoto",
   date: datetime.today().display(),
   authors: (
-    "Antonio M. S. A. Hachisuca",
-    "Nathan L. B. Martins",
-    "Willian M. Mori",
+    "Gabriel Dimant",
+    "Marcus Peixoto",
+    "Luan Pereira Pinheiro",
   ),
-  logo: "phik.jpg"
+  logo: "marcus_peixoto.png"
 )
 
 = Template hashing
@@ -159,7 +159,7 @@ If we delete one row and one column from the matrix, the determinant of the resu
 
 To find a vertex cover equal to the maximum matching of a $(A, B)$-bipartite graph, let $U$ be the set of unmatched vertices in $A$, and let $Z$ be the set of vertices that are either in $U$ or are connected to $U$ by alternating paths (paths that alternate between edges that are in the matching and edges that are not in the matching). Then the vertex cover is
 
-$ K = (A backslash Z) union (B sect Z)  $
+$ K = (A backslash Z) union (B inter Z)  $
 
 = Code
 
