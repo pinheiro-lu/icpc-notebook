@@ -60,6 +60,31 @@ $|X slash G| = 1/(|G|) sum_(g in G) |X^g| $
 For prime p,
 $binom(n, m) = product_(i=0)^n binom(n_i, m_i) space (mod p)$
 
+== Fermat's Little Theorem
+
+Let $p$ be a prime number. If $gcd(a, p) = 1$, then:
+$ a^(p-1) equiv 1 space (mod p) quad "and" quad a^p equiv a space (mod p) "for all" a $
+
+- *Modular Inverse:* $a^(-1) equiv a^(p-2) space (mod p)$
+- *Exponent Reduction:* Since $a^(p-1) equiv 1$, the exponent cycles with period $p-1$:
+$ a^b equiv a^(b space mod space (p-1)) space (mod p) quad ("if" gcd(a, p) = 1) $
+*Example (Power Tower $a^(b^c) space mod space p$):* Compute exponent $E = b^c space mod space (p-1)$, then the answer is $a^E space mod space p$.
+
+== Euler's Totient Theorem
+
+Euler's totient function $phi(n)$ counts integers $k in [1, n]$ such that $gcd(k, n) = 1$.
+$ phi(n) = n product_(p | n) (1 - 1/p) = product_(i) p_i^(k_i - 1) (p_i - 1) $
+- *Properties:* Multiplicative: $phi(a b) = phi(a) phi(b)$ if $gcd(a, b) = 1$. Also $sum_(d | n) phi(d) = n$.
+- *Euler's Theorem:* If $gcd(a, m) = 1$, then $a^(phi(m)) equiv 1 space (mod m)$, so $a^(-1) equiv a^(phi(m)-1) space (mod m)$.
+
+*General Exponent Reduction (Power Towers / CSES Exponentiation II):*
+For any base $a$:
+$ a^b equiv cases(
+  a^(b space mod space phi(m)) space (mod m) &"if" gcd(a, m) = 1,
+  a^(b space mod space phi(m) + phi(m)) space (mod m) &"if" b >= phi(m)
+) $
+To evaluate towers $a_1^(a_2^(a_3^(dots))) space mod space m$, recursively reduce the modulo with $m_(i+1) = phi(m_i)$, which reaches 1 in $O(log m)$ steps.
+
 == Catalan
 
 $C_n = 1 / (n+1) mat(2n;n) = (2n)!/(n!*(n+1)!)$
