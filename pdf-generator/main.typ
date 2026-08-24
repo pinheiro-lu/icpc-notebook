@@ -186,6 +186,75 @@ To find a vertex cover equal to the maximum matching of a $(A, B)$-bipartite gra
 
 $ K = (A backslash Z) union (B inter Z)  $
 
+== Bit Manipulation (CP-Algorithms)
+
+=== Bit Operations (k-th bit)
+- *Check bit:* `(x >> k) & 1` or `(x & (1LL << k)) != 0`
+- *Set bit:* `x |= (1LL << k)`
+- *Clear bit:* `x &= ~(1LL << k)`
+- *Toggle bit:* `x ^= (1LL << k)`
+- *Set to $v in {0, 1}$:* `x = (x & ~(1LL << k)) | ((ll)v << k)`
+
+=== Arithmetic & LSB Tricks
+- *Isolate LSB (lowest 1):* `x & -x` or `x & (~x + 1)`
+- *Clear lowest 1:* `x & (x - 1)`
+- *Power of 2 check:* `x > 0 and (x & (x - 1)) == 0`
+- *Mask of 1s up to LSB:* `x ^ (x - 1)`
+- *Mask of 1s below LSB:* `(x & -x) - 1`
+- *Clear trailing 1s:* `x & (x + 1)` (ex: $010111_2 arrow.r 010000_2$)
+- *Set lowest 0:* `x | (x + 1)` (ex: $010110_2 arrow.r 010111_2$)
+- *Isolate lowest 0:* `~x & (x + 1)`
+
+=== Fast Branchless Tricks
+- *Swap:* `a ^= b; b ^= a; a ^= b;`
+- *Modulo $2^k$:* `x & ((1LL << k) - 1)`
+- *Opposite signs check:* `(x ^ y) < 0`
+- *Branchless Min/Max:*
+  - $min(a, b) = b xor ((a xor b) and -(a < b))$
+  - $max(a, b) = a xor ((a xor b) and -(a < b))$
+
+=== Mask Operations as Sets
+- *Intersection ($A inter B$):* `A & B`
+- *Union ($A union B$):* `A | B`
+- *Difference ($A backslash B$):* `A & ~B`
+- *Symmetric Difference ($A Delta B$):* `A ^ B`
+- *Complement ($overline(A)$ in $N$ bits):* `(~A) & ((1LL << N) - 1)`
+- *Subset check ($A subset.eq B$):* `(A & B) == A` or `(A & ~B) == 0`
+
+=== GCC Builtins (64-bit with `ll`) & C++20 `<bit>`
+- `__builtin_popcountll(x)` / `std::popcount(x)`: number of 1-bits.
+- `__builtin_ctzll(x)` / `std::countr_zero(x)`: trailing zeros (index of LSB).
+- `__builtin_clzll(x)` / `std::countl_zero(x)`: leading zeros ($63 - floor(log_2(x))$).
+- `__builtin_ffsll(x)`: 1st set bit ($1$-indexed, 0 if $x = 0$).
+- `__builtin_parityll(x)`: parity of 1s ($1$ if odd, $0$ if par).
+- `std::bit_width(x)` ($64 - "clz"(x)$), `std::bit_ceil(x)` ($>= x$), `std::bit_floor(x)` ($<= x$).
+- `std::rotl(x, s)` / `std::rotr(x, s)`: circular bit rotation.
+
+=== Submask Enumeration
+- *Iterate submasks of $m$ in descending order ($O(3^N)$ total):*
+```cpp
+for (int s = m; s; s = (s - 1) & m) { /* use s */ }
+```
+- *Iterate submasks of $m$ including 0:*
+```cpp
+for (int s = m; ; s = (s - 1) & m) { /* use s */ if (!s) break; }
+```
+- *Iterate supermasks of $s$ in universe of $N$ bits:*
+```cpp
+for (int m = s; m < (1 << n); m = (m + 1) | s) { /* use m */ }
+```
+
+=== Gosper's Hack ($O(binom(n, k))$)
+Iterates all masks of $n$ bits with exactly $k$ set bits in ascending order:
+```cpp
+int mask = (1 << k) - 1;
+while (mask < (1 << n)) {
+	/* use mask */
+	int c = mask & -mask, r = mask + c;
+	mask = (((r ^ mask) >> 2) / c) | r;
+}
+```
+
 = Code
 
 // Script will be used to insert code here
