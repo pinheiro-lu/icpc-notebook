@@ -255,6 +255,18 @@ while (mask < (1 << n)) {
 }
 ```
 
+== Game Theory
+
+- *Sprague-Grundy Theorem:* Any impartial finite game under normal play is equivalent to a Nim pile of size $G(S) = "mex"({G(S')})$. Independent games sum with XOR: $G(A + B) = G(A) xor G(B)$. First player wins iff $G(S) != 0$.
+- *Standard Nim:* Piles $a_1, dots, a_n$. First player wins iff $a_1 xor a_2 xor dots xor a_n != 0$.
+- *Another Game (remove 1 from any subset of piles):* First player wins iff there is at least one odd pile ($exists a_i equiv 1 space (mod 2)$).
+- *Subtraction Game (remove $1 dots k$ items):* First player wins iff $n space mod space (k + 1) != 0$.
+- *Staircase Nim (move coins down steps):* Equivalent to Nim on *odd-indexed* steps ($xor_(i "odd") a_i != 0$). Moving from odd to even is a normal Nim move; moving from even to odd can be mirrored by the opponent.
+- *Tree Nim (move coins towards root):* Equivalent to Nim with coins at odd depths ($xor_(u "odd depth") "coins"[u] != 0$).
+- *Misère Nim (normal play, but last move loses):* If all piles have size $<= 1$, win iff number of piles is even; otherwise, play normal Nim ($xor a_i != 0$).
+- *Moore's $"Nim"_k$ (remove from up to $k$ piles):* Expand pile sizes in binary; win iff there is some bit position where the sum of bits is not divisible by $k + 1$.
+
 = Code
 
 // Script will be used to insert code here
+

@@ -1,9 +1,17 @@
-// RMQ
-//  Description: 
-//      Answers queries on a range.
-//  Complexity: 
-// 		build - O(N logN)
-// 		query - O(1)
+// Sparse Table / RMQ
+//
+// Descrição:
+//     Responde queries estáticas em intervalos [a, b].
+//     - Operações idempotentes (min, max, gcd, and, or): query em O(1).
+//     - Operações associativas gerais (soma, produto): query em O(log N).
+//
+// Vantagens sobre SegTree / BIT:
+//     - Query O(1) para operações idempotentes vs O(log N).
+//     - Constante e localidade de cache excelentes (matriz contígua).
+//
+// Complexidade:
+//     build - O(N log N)
+//     query - O(1) para idempotentes / O(log N) geral
 
 template <typename T> struct RMQ {
 	vector<vector<T>> dp;
@@ -24,5 +32,12 @@ template <typename T> struct RMQ {
 		int p = 31-__builtin_clz(b-a);
 		auto &cur = dp[p];
 		return ops(cur[a], cur[b-(1<<p)+1]);
+	}
+	T query_log(int l, int r) {
+		T ans = 0;
+		for (int i = dp.size() - 1; i >= 0; i--)
+			if ((1 << i) <= r - l + 1)
+				ans = ops(ans, dp[i][l]), l += (1 << i);
+		return ans;
 	}
 };
