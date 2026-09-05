@@ -179,6 +179,19 @@ $ L_(i j) = cases(
 )  $
 
 If we delete one row and one column from the matrix, the determinant of the resulting $(n-1)$-by-$(n-1)$ matrix will be equal to the number of distinct spanning trees.
+== Network Flow (Ford-Fulkerson)
+
+- *Residual Graph:* For each edge $a arrow.r b$ with capacity $c$ and current flow $f$:
+  - Forward edge $a arrow.r b$ has remaining capacity $c - f$.
+  - Reverse edge $b arrow.r a$ has capacity $f$ (allows canceling flow).
+- *Ford-Fulkerson Method (DFS):*
+  1. Start with flow $f = 0$ on all edges.
+  2. Find any path from source $s$ to sink $t$ in the residual graph where all edges have positive capacity ($c - f > 0$) using DFS.
+  3. Let $x$ be the minimum capacity along this path. Increase flow $f$ along the path by $x$ (for each edge in the path, $c - f$ decreases by $x$ and reverse capacity $f$ increases by $x$).
+  4. Repeat until no path from $s$ to $t$ exists in the residual graph.
+  - *Complexity:* $O(E dot |f|)$ using DFS.
+- *Max-Flow Min-Cut Theorem:* The maximum flow from $s$ to $t$ equals the minimum total capacity of edges whose removal disconnects $s$ from $t$.
+- *Maximum Bipartite Matching:* Direct edges from source $s$ to $A$ (cap 1), edges from $A$ to $B$ (cap 1), and edges from $B$ to sink $t$ (cap 1). The maximum flow equals the size of the maximum matching.
 
 == Kőnig's theorem
 

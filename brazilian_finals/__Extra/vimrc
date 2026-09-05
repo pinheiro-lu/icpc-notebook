@@ -1,0 +1,7 @@
+sy on
+se nu rnu ts=4 sw=4 si mouse=a is mps+=<:> so=8 udf
+se mp=g\ %
+map <C-h> <C-w>h
+map <C-j> <C-w>j
+map <C-k> <C-w>k
+map <C-l> <C-w>l

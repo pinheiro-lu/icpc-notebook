@@ -1,4 +1,4 @@
-CODES_DIR_PATH ?= "subreg/"
+CODES_DIR_PATH ?= "brazilian_finals/"
 
 docker-pdf: docker-image
 	docker run -v ./output:/app/output icpc-notebook-template-image:dev && cp ./output/main.pdf ./notebook.pdf && rm -f output/*
