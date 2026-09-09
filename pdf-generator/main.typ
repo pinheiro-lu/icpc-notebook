@@ -85,6 +85,11 @@ $ a^b equiv cases(
 ) $
 To evaluate towers $a_1^(a_2^(a_3^(dots))) space mod space m$, recursively reduce the modulo with $m_(i+1) = phi(m_i)$, which reaches 1 in $O(log m)$ steps.
 
+== Large Prime Gaps
+
+- For numbers up to $10^9$, the largest gap is $400$.
+- For numbers up to $10^(18)$, the largest gap is $1500$.
+
 == Catalan
 
 $C_n = 1 / (n+1) mat(2n;n) = (2n)!/(n!*(n+1)!)$
