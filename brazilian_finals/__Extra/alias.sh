@@ -1,2 +1,1 @@
-g() { g++ -Wconversion -fsanitize=undefined,address -g "$@"; }
-export -f g
+export CXXFLAGS="-Wconversion -fsanitize=undefined,address -g"

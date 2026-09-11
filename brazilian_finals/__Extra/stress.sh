@@ -1,10 +1,9 @@
 #!/bin/bash
 
-P=A
-make ${P} brute gen || exit 1
+make sol brute || exit 1
 for ((i = 1; ; i++)); do
-	./gen >in
-	./${P} <in >out
+	python3 gen.py >in
+	./sol <in >out
 	./brute <in >out2
 	if (! cmp -s out out2); then
 		echo "--> entrada:"
