@@ -1,83 +1,73 @@
-// DP de Dominacao 3D / CDQ Divide & Conquer (UFMG)
+// CDQ Divide and Conquer (robert1003)
 //
-// Computa para todo ponto i:
-// dp[i] = 1 + max_{j dominado por i} dp[j]
-// em que ser dominado eh ter as 3 coordenadas estritamente menores (x, y, z).
+// 3D Partial Order (ZJc571):
+// Given a set of unique 3D points S of size n (1 <= x, y, z <= n), for each
+// P_i = (x_i, y_i, z_i), counts P_j in S with x_i < x_j, y_i < y_j, z_i < z_j.
 //
-// Como adaptar para outros problemas:
-// 1. Contagem de pontos dominados em 3D:
-//    - Na BIT, trocar max por soma: bit[p-1] += 1 (update) e ans[id] += q (query).
-// 2. Problemas Dinâmicos Offline (Updates + Queries):
-//    - Coordenada X = Timestamp (tempo da operacao).
-//    - vv[0] (esquerda) = updates no passado que inserem na BIT.
-//    - vv[1] (direita) = queries no futuro que consultam a BIT.
-// 3. Ordem nao-estrita (<= em vez de <):
-//    - No while, trocar '< y' por '<= y'.
+// Adaptations from the post:
+// - 2D Update + Submatrix Sum (Mokia / CF1093E):
+//   View operations as (t, x, y) where t is time of operation:
+//   * Type 1 (A[x, y] += a): create (t, x, y) with value a, sgn = 0.
+//   * Type 2 (sum on [x1, y1]..[x2, y2]): create 4 prefix elements (t, x2, y2),
+//     (t, x1-1, y2), (t, x2, y1-1), (t, x1-1, y1-1) with sgn = +1/-1, v = 0.
+//   * Merge with v[a].x <= v[b].x: left updates bit(y, v) and records (y, -v);
+//     right adds sgn * bit.query(y) to ans[i].
+// - DP / Convex Hull Optimization (TIOJ1921):
+//   For dp in [l, r): 1) cdq(l, m); 2) use dp in [l, m) to update [m, r);
+//   3) cdq(m, r); 4) merge the two convex hulls from [l, m) and [m, r).
 //
-// Complexidade: O(N log^2 N) tempo, O(N) memoria
+// Complexity: O(N log^2 N)
 
-#include <vector>
-#include <tuple>
-#include <algorithm>
-using namespace std;
+struct Pt {
+	int x, y, z, i;
+};
 
-void cdq_lis2d(vector<vector<tuple<int, int, int>>>& v, vector<int>& dp, int l, int r) {
-	if (l == r) {
-		for (int i = 0; i < (int)v[l].size(); i++) {
-			int ii = get<2>(v[l][i]);
-			dp[ii] = max(dp[ii], 1);
+const int N = (int)1e5 + 5;
+
+// Bit<T> from Data Structures/bit.cpp (0-indexed)
+Bit<int> bit(0);
+
+vector<Pt> v;
+int n, ans[N];
+
+void cdq(int l, int r) {
+	if (l + 1 == r) return;
+	int m = (l + r) >> 1;
+	cdq(l, m); cdq(m, r);
+	int a = l, b = m, sum = 0;
+	// need to record the modifications on BIT in order to reset it.
+	// The complexity will be O(N^2) if we resetting it brute-forcely.
+	vector<int> record;
+	// temporary array for merge sort
+	vector<Pt> tmp;
+	while (a < m && b < r) {
+		if (v[a].y > v[b].y) {
+			bit.update(v[a].z, 1), sum++;
+			record.push_back(v[a].z);
+			tmp.push_back(v[a++]);
+		} else {
+			ans[v[b].i] += sum - bit.query(v[b].z);
+			tmp.push_back(v[b++]);
 		}
-		return;
 	}
-	int m = (l + r) / 2;
-	cdq_lis2d(v, dp, l, m);
-
-	vector<tuple<int, int, int>> vv[2];
-	vector<int> Z;
-	for (int i = l; i <= r; i++) for (auto it : v[i]) {
-		vv[i > m].push_back(it);
-		Z.push_back(get<1>(it));
+	while (a < m) tmp.push_back(v[a++]);
+	while (b < r) {
+		ans[v[b].i] += sum - bit.query(v[b].z);
+		tmp.push_back(v[b++]);
 	}
-	sort(vv[0].begin(), vv[0].end());
-	sort(vv[1].begin(), vv[1].end());
-	sort(Z.begin(), Z.end());
-	auto get_z = [&](int z) { return (int)(lower_bound(Z.begin(), Z.end(), z) - Z.begin()); };
-	vector<int> bit(Z.size(), 0);
-
-	int i = 0;
-	for (auto [y, z, id] : vv[1]) {
-		while (i < (int)vv[0].size() and get<0>(vv[0][i]) < y) {
-			auto [y2, z2, id2] = vv[0][i++];
-			for (int p = get_z(z2) + 1; p <= (int)Z.size(); p += p & -p)
-				bit[p - 1] = max(bit[p - 1], dp[id2]);
-		}
-		int q = 0;
-		for (int p = get_z(z); p; p -= p & -p) q = max(q, bit[p - 1]);
-		dp[id] = max(dp[id], q + 1);
-	}
-	cdq_lis2d(v, dp, m + 1, r);
+	for (int i = l; i < r; ++i) v[i] = tmp[i - l];
+	// reset BIT
+	for (auto i : record) bit.update(i, -1);
+	// release used memory
+	vector<int>().swap(record);
+	vector<Pt>().swap(tmp);
 }
 
-vector<int> solve_cdq(vector<tuple<int, int, int>> v) {
-	int n = v.size();
-	vector<tuple<int, int, int, int>> vv;
-	for (int i = 0; i < n; i++) {
-		auto [x, y, z] = v[i];
-		vv.emplace_back(x, y, z, i);
-	}
-	sort(vv.begin(), vv.end());
-
-	vector<vector<tuple<int, int, int>>> V;
-	for (int i = 0; i < n; i++) {
-		int j = i;
-		V.emplace_back();
-		while (j < n and get<0>(vv[j]) == get<0>(vv[i])) {
-			auto [x, y, z, id] = vv[j++];
-			V.back().emplace_back(y, z, id);
-		}
-		i = j - 1;
-	}
-	vector<int> dp(n, 0);
-	cdq_lis2d(V, dp, 0, (int)V.size() - 1);
-	return dp;
+void solve() {
+	bit = Bit<int>(n + 1);
+	// As we require > not >=
+	sort(v.begin(), v.end(), [&](auto a, auto b) {
+		return (a.x == b.x ? (a.y == b.y ? a.z < b.z : a.y < b.y) : a.x > b.x);
+	});
+	cdq(0, n);
 }
