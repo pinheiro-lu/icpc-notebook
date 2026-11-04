@@ -4,22 +4,22 @@
 // Complexity: O(NlogN)
 
 template <bool UPPER>
-vector<point> hull(vector<point> v) {
-	vector<point> res;
-	if(UPPER) for(auto& p: v) p.x = -p.x, p.y = -p.y;
-	sort(all(v));
+vector<P> hull(vector<P> v) {
+	vector<P> res;
+	if(UPPER) for(auto& p: v) p = -p;
+	sort(v.begin(), v.end());
 	for(auto& p: v) {
-		if(res.empty()) { res.push_back(p); continue; }
-		if(res.back().x == p.x) continue;
+		if(res.empty()) { res.pb(p); continue; }
+		if(zero(res.back().X - p.X)) continue;
 		while(res.size() >= 2) {
-			point a = res[res.size()-2], b = res.back();
+			P a = res[res.size()-2], b = res.back();
 			if(!left(a, b, p)) res.pop_back();
 			//to include collinear points
 			//if(right(a, b, p)) res.pop_back();
 			else break;
 		}
-		res.push_back(p);
+		res.pb(p);
 	}
-	if(UPPER) for(auto& p: res) p.x = -p.x, p.y = -p.y;
+	if(UPPER) for(auto& p: res) p = -p;
 	return res;
 }
