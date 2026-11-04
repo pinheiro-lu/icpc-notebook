@@ -6,7 +6,7 @@
   title: "Universidade de São Paulo - Escola de Artes, Ciências e Humanidades - Olá,sou Marcus Peixoto",
   date: datetime.today().display(),
   authors: (
-    "Gabriel Dimant",
+    "Henrique Lam",
     "Marcus Peixoto",
     "Luan Pereira Pinheiro",
   ),
@@ -16,7 +16,7 @@
 = Template hashing
 
 ```bash
-sed -n $2','$3' p' $1 | cpp -dD -P -fpreprocessed | tr -d '[:space:]' | md5sum | cut -c-6
+sed -n "${2:-1},${3:-$}p" $1 | cpp -dD -P -fpreprocessed | tr -d '[:space:]' | md5sum | cut -c-6
 ```
 The cli command `md5sum` is used to validate if the template was written correctly.
 
@@ -38,7 +38,7 @@ The empty hash is
 `d41d8`
 while
 the `m5dsum` of `hash.sh` is
-`9cd12`.
+`e9a30`.
 
 == Matrix Inverse 2x2
 
@@ -260,17 +260,6 @@ for (int s = m; ; s = (s - 1) & m) { /* use s */ if (!s) break; }
 - *Iterate supermasks of $s$ in universe of $N$ bits:*
 ```cpp
 for (int m = s; m < (1 << n); m = (m + 1) | s) { /* use m */ }
-```
-
-=== Gosper's Hack ($O(binom(n, k))$)
-Iterates all masks of $n$ bits with exactly $k$ set bits in ascending order:
-```cpp
-int mask = (1 << k) - 1;
-while (mask < (1 << n)) {
-	/* use mask */
-	int c = mask & -mask, r = mask + c;
-	mask = (((r ^ mask) >> 2) / c) | r;
-}
 ```
 
 == Game Theory
