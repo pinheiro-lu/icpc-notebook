@@ -148,7 +148,56 @@ fn codes(codes_dir_path: &str) -> Result<String, std::fmt::Error> {
     Ok(results.join(""))
 }
 
+fn shift_even_pages(pdf_path: &str) {
+    const ORIG: &[u8] = b"/MediaBox[0 0 841.8898 595.2756]";
+    const EVEN: &[u8] = b"/MediaBox[0 -19.84 841.9 575.43]";
+    assert_eq!(ORIG.len(), EVEN.len());
+
+    let mut data = fs::read(pdf_path).expect("Failed to read PDF");
+    let pages_tag = b"/Type/Pages";
+    let pages_pos = data
+        .windows(pages_tag.len())
+        .position(|w| w == pages_tag)
+        .expect("Could not find /Type/Pages in PDF");
+    let kids_tag = b"/Kids[";
+    let kids_rel = data[pages_pos..]
+        .windows(kids_tag.len())
+        .position(|w| w == kids_tag)
+        .expect("Could not find /Kids[ in /Type/Pages");
+    let kids_start = pages_pos + kids_rel + kids_tag.len();
+    let kids_end = kids_start
+        + data[kids_start..]
+            .iter()
+            .position(|&b| b == b']')
+            .expect("Unclosed /Kids[");
+    let kids_str = String::from_utf8(data[kids_start..kids_end].to_vec()).unwrap();
+    let tokens: Vec<&str> = kids_str.split_whitespace().collect();
+    for (idx, chunk) in tokens.chunks_exact(3).enumerate() {
+        let phys_page = idx + 1;
+        if phys_page % 2 == 0 {
+            let obj_header = format!("\n{} 0 obj\n", chunk[0]);
+            let obj_bytes = obj_header.as_bytes();
+            let obj_pos = data
+                .windows(obj_bytes.len())
+                .position(|w| w == obj_bytes)
+                .unwrap_or_else(|| panic!("Could not find object {}", chunk[0]));
+            let mb_rel = data[obj_pos..]
+                .windows(ORIG.len())
+                .position(|w| w == ORIG)
+                .unwrap_or_else(|| panic!("Could not find /MediaBox in page {phys_page}"));
+            let mb_pos = obj_pos + mb_rel;
+            data[mb_pos..mb_pos + EVEN.len()].copy_from_slice(EVEN);
+        }
+    }
+    fs::write(pdf_path, &data).expect("Failed to write shifted PDF");
+}
+
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() == 3 && args[1] == "--duplex-shift" {
+        shift_even_pages(&args[2]);
+        return;
+    }
     let codes_path = std::env::var("CODES_DIR_PATH")
         .expect("Set the path of the codes directory as the CODES_DIR_PATH environment variable");
     let codes = codes(&codes_path).unwrap();

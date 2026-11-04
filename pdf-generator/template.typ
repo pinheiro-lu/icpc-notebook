@@ -3,12 +3,18 @@
   authors: (),
   date: none,
   logo: none,
+  duplex: sys.inputs.at("duplex", default: "false") == "true",
   body,
 ) = {
   // Set the document's basic properties.
   set document(author: authors, title: title)
   set page(
-    margin: (left: 12mm, right: 5mm, top: 5mm, bottom: 5mm),
+    margin: if duplex {
+      (left: 5mm, right: 5mm, top: 12mm, bottom: 5mm)
+    } else {
+      (left: 12mm, right: 5mm, top: 5mm, bottom: 5mm)
+    },
+    header-ascent: 1.5mm,
     footer: none,
     numbering: none,
     flipped: true
@@ -41,11 +47,21 @@
   v(2.4fr)
   counter(page).update(0)
   pagebreak()
-  set page( header: [
+  let running-bar = [
     #str(title)
     #h(1fr)
     #context counter(page).display()
-  ])
+  ]
+  set page(
+    header: if duplex {
+      context if calc.even(here().page()) { running-bar }
+    } else {
+      running-bar
+    },
+    footer: if duplex {
+      context if calc.odd(here().page()) { running-bar }
+    },
+  )
   show: columns.with(3, gutter: 0.7em, )
   // Table of contents.
   outline(depth: 3, indent: 2em)

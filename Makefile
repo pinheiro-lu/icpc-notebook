@@ -1,4 +1,5 @@
 CODES_DIR_PATH ?= "brazilian_finals/"
+DUPLEX ?= 0
 
 docker-pdf: docker-image
 	docker run -v ./output:/app/output icpc-notebook-template-image:dev && cp ./output/main.pdf ./notebook.pdf && rm -f output/*
@@ -9,7 +10,11 @@ docker-image:
 .PHONY: docker-image
 
 pdf: typst
+ifeq ($(DUPLEX),1)
+	typst compile --input duplex=true ./output/main.typ && ./output/main --duplex-shift ./output/main.pdf && cp ./output/main.pdf ./notebook.pdf
+else
 	typst compile ./output/main.typ && cp ./output/main.pdf ./notebook.pdf
+endif
 .PHONY: pdf
 
 typst: compile
